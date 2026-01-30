@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>0xTi - Countdown</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Custom font styles */
+        body {
+            font-family: 'Courier Prime', monospace;
+        }
+
+        #main-title {
+            font-family: 'Creepster', cursive;
+        }
+
+        /* Glitch animation */
+        @keyframes glitch {
+            0% {
+                transform: translate(0);
+            }
+            20% {
+                transform: translate(-2px, 2px);
+            }
+            40% {
+                transform: translate(-2px, -2px);
+            }
+            60% {
+                transform: translate(2px, 2px);
+            }
+            80% {
+                transform: translate(2px, -2px);
+            }
+            100% {
+                transform: translate(0);
+            }
+        }
+
+        .glitch {
+            position: relative;
+            animation: glitch 0.3s infinite;
+        }
+
+        /* Pulse animation for background */
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        /* Light blink animation */
+        @keyframes blink {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        /* Particle float animation */
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(50px);
+                opacity: 0;
+            }
+        }
+        
+        /* Smooth transition for progress circles */
+        #hours-progress, #minutes-progress, #seconds-progress {
+            transition: stroke-dashoffset 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-black min-h-screen overflow-hidden relative flex items-center justify-center">
+    <!-- Floating Particles -->
+    <div id="particles-container" class="fixed inset-0 pointer-events-none z-0"></div>
+    
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 py-8 relative z-20">
+        <div class="text-center">
+            <!-- Title with Glitch Effect -->
+            <div class="mb-8">
+                <h1 id="main-title" class="text-6xl md:text-8xl lg:text-9xl font-bold mb-4"></h1>
+            </div>
+            
+            <div id="subtitle" class="text-xl md:text-2xl mb-12 tracking-widest"></div>
+            
+            <!-- Countdown Timer - Single Integrated Dial -->
+            <div id="countdown" class="flex justify-center items-center mb-8">
+                <div class="text-center">
+                    <div class="relative w-96 h-96 md:w-[550px] md:h-[550px] lg:w-[650px] lg:h-[650px]">
+                        <!-- SVG with three concentric circles -->
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 200 200">
+                            <!-- Outer circle - Hours -->
+                            <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(139, 0, 0, 0.2)" stroke-width="6"/>
+                            <circle id="hours-progress" cx="100" cy="100" r="95" fill="none" stroke="#ff0000" stroke-width="6" 
+                                    stroke-linecap="round" stroke-dasharray="597" stroke-dashoffset="597"/>
+                            
+                            <!-- Middle circle - Minutes -->
+                            <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(139, 0, 0, 0.2)" stroke-width="6"/>
+                            <circle id="minutes-progress" cx="100" cy="100" r="80" fill="none" stroke="#ff3333" stroke-width="6" 
+                                    stroke-linecap="round" stroke-dasharray="503" stroke-dashoffset="503"/>
+                            
+                            <!-- Inner circle - Seconds -->
+                            <circle cx="100" cy="100" r="65" fill="none" stroke="rgba(139, 0, 0, 0.2)" stroke-width="6"/>
+                            <circle id="seconds-progress" cx="100" cy="100" r="65" fill="none" stroke="#ff6666" stroke-width="6" 
+                                    stroke-linecap="round" stroke-dasharray="408" stroke-dashoffset="408"/>
+                        </svg>
+                        
+                        <!-- Time displays in center - Horizontal Layout -->
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="flex items-center gap-2 md:gap-4 lg:gap-5">
+                                <div class="text-center">
+                                    <div id="hours" class="text-3xl md:text-5xl lg:text-6xl font-bold mb-1"></div>
+                                    <div class="text-[8px] md:text-xs uppercase tracking-wider opacity-60">Hours</div>
+                                </div>
+                                <div class="text-3xl md:text-5xl lg:text-6xl font-bold opacity-50">:</div>
+                                <div class="text-center">
+                                    <div id="minutes" class="text-3xl md:text-5xl lg:text-6xl font-bold mb-1"></div>
+                                    <div class="text-[8px] md:text-xs uppercase tracking-wider opacity-60">Minutes</div>
+                                </div>
+                                <div class="text-3xl md:text-5xl lg:text-6xl font-bold opacity-50">:</div>
+                                <div class="text-center">
+                                    <div id="seconds" class="text-3xl md:text-5xl lg:text-6xl font-bold mb-1"></div>
+                                    <div class="text-[8px] md:text-xs uppercase tracking-wider opacity-60">Seconds</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Event End Message -->
+            <div id="event-message" class="hidden mb-8">
+                <div class="text-4xl md:text-6xl lg:text-7xl font-bold"></div>
+            </div>
+            
+            <!-- Target Time Info -->
+            <div id="target-info" class="text-lg md:text-xl opacity-60 tracking-wide"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Stranger Things color palette
+        const colors = {
+            red: '#ff0000',
+            darkRed: '#8B0000',
+            blue: '#0000ff',
+            darkBlue: '#00008B',
+            yellow: '#ffff00',
+            green: '#00ff00',
+            purple: '#ff00ff',
+            white: '#ffffff'
+        };
+
+        // Initialize the page
+        function init() {
+            createParticles();
+            styleTitle();
+            styleSubtitle();
+            styleCountdown();
+            styleTargetInfo();
+            addBackgroundGradient();
+            startCountdown();
+        }
+
+        // Create floating particles
+        function createParticles() {
+            const container = document.getElementById('particles-container');
+            const numParticles = 15;
+            
+            for (let i = 0; i < numParticles; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'absolute w-1 h-1 bg-white rounded-full';
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.opacity = '0';
+                particle.style.animation = `float ${10 + Math.random() * 10}s linear infinite`;
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+                container.appendChild(particle);
+            }
+        }
+
+        // Style the title with glitch effect
+        function styleTitle() {
+            const title = document.getElementById('main-title');
+            title.textContent = '0xTi';
+            title.classList.add('glitch');
+            
+            // Stranger Things red glow - reduced intensity
+            title.style.color = colors.red;
+            title.style.textShadow = `
+                0 0 5px ${colors.red},
+                0 0 10px ${colors.red},
+                0 0 15px ${colors.darkRed}
+            `;
+            
+            // Random glitch effect
+            setInterval(() => {
+                if (Math.random() > 0.95) {
+                    title.style.textShadow = `
+                        2px 2px 0 ${colors.blue},
+                        -2px -2px 0 ${colors.red}
+                    `;
+                    setTimeout(() => {
+                        title.style.textShadow = `
+                            0 0 5px ${colors.red},
+                            0 0 10px ${colors.red},
+                            0 0 15px ${colors.darkRed}
+                        `;
+                    }, 100);
+                }
+            }, 100);
+        }
+
+        // Style subtitle
+        function styleSubtitle() {
+            const subtitle = document.getElementById('subtitle');
+            subtitle.textContent = 'THE UPSIDE DOWN AWAITS';
+            subtitle.style.color = colors.white;
+            subtitle.style.textShadow = `0 0 5px ${colors.blue}`;
+            subtitle.style.opacity = '0.8';
+        }
+
+        // Style countdown numbers
+        function styleCountdown() {
+            const hours = document.getElementById('hours');
+            const minutes = document.getElementById('minutes');
+            const seconds = document.getElementById('seconds');
+            
+            [hours, minutes, seconds].forEach(element => {
+                element.style.color = colors.red;
+                element.style.textShadow = `
+                    0 0 5px ${colors.red},
+                    0 0 10px ${colors.darkRed}
+                `;
+                element.style.fontFamily = "'Courier Prime', monospace";
+                element.style.fontWeight = 'bold';
+            });
+            
+            // Add reduced glow effect to progress circles
+            const progressCircles = ['hours-progress', 'minutes-progress', 'seconds-progress'];
+            progressCircles.forEach(id => {
+                const circle = document.getElementById(id);
+                circle.style.filter = `drop-shadow(0 0 3px ${colors.red})`;
+            });
+        }
+
+        // Style target info
+        function styleTargetInfo() {
+            const info = document.getElementById('target-info');
+            info.textContent = 'Daily at 11:00 AM IST';
+            info.style.color = colors.white;
+            info.style.textShadow = `0 0 3px ${colors.yellow}`;
+        }
+
+        // Add animated background gradient
+        function addBackgroundGradient() {
+            const body = document.body;
+            const gradient = document.createElement('div');
+            gradient.className = 'fixed inset-0 pointer-events-none';
+            gradient.style.background = `
+                radial-gradient(ellipse at top, rgba(139, 0, 0, 0.3) 0%, transparent 60%),
+                radial-gradient(ellipse at bottom, rgba(0, 0, 139, 0.3) 0%, transparent 60%)
+            `;
+            gradient.style.animation = 'pulse 4s ease-in-out infinite';
+            gradient.style.zIndex = '1';
+            body.insertBefore(gradient, body.firstChild);
+        }
+
+        // Calculate next 11:00 AM IST
+        function getNextTargetTime() {
+            // Get current time in IST
+            const now = new Date();
+            const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
+            const istTime = new Date(now.getTime() + istOffset + now.getTimezoneOffset() * 60 * 1000);
+            
+            // Set target to 11:00 AM IST today
+            const target = new Date(istTime);
+            target.setHours(11, 0, 0, 0);
+            
+            // If we've passed 11:00 AM IST today, set target to tomorrow
+            if (istTime > target) {
+                target.setDate(target.getDate() + 1);
+            }
+            
+            // Convert back to local time
+            return new Date(target.getTime() - istOffset - now.getTimezoneOffset() * 60 * 1000);
+        }
+
+        // Update countdown
+        function updateCountdown() {
+            const now = new Date();
+            const target = getNextTargetTime();
+            const diff = target - now;
+            
+            if (diff <= 0) {
+                showEventEnd();
+                return;
+            }
+            
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            // Update numbers
+            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+            
+            // Update circular progress bars with correct circumferences
+            // Hours: radius 95, circumference = 2 * PI * 95 ≈ 597
+            const hoursCircumference = 597;
+            const hoursProgress = hoursCircumference - (hours / 24) * hoursCircumference;
+            document.getElementById('hours-progress').style.strokeDashoffset = hoursProgress;
+            
+            // Minutes: radius 80, circumference = 2 * PI * 80 ≈ 503
+            const minutesCircumference = 503;
+            const minutesProgress = minutesCircumference - (minutes / 60) * minutesCircumference;
+            document.getElementById('minutes-progress').style.strokeDashoffset = minutesProgress;
+            
+            // Seconds: radius 65, circumference = 2 * PI * 65 ≈ 408
+            const secondsCircumference = 408;
+            const secondsProgress = secondsCircumference - (seconds / 60) * secondsCircumference;
+            document.getElementById('seconds-progress').style.strokeDashoffset = secondsProgress;
+            
+            // Hide event message if showing
+            document.getElementById('event-message').classList.add('hidden');
+            document.getElementById('countdown').classList.remove('hidden');
+        }
+
+        // Show event end message
+        function showEventEnd() {
+            const countdown = document.getElementById('countdown');
+            const eventMessage = document.getElementById('event-message');
+            const messageText = eventMessage.querySelector('div');
+            
+            countdown.classList.add('hidden');
+            eventMessage.classList.remove('hidden');
+            
+            messageText.textContent = 'Event End!';
+            messageText.classList.add('glitch');
+            messageText.style.color = colors.red;
+            messageText.style.textShadow = `
+                0 0 5px ${colors.red},
+                0 0 10px ${colors.red},
+                0 0 15px ${colors.darkRed}
+            `;
+            messageText.style.fontFamily = "'Creepster', cursive";
+            
+            // Flicker effect for event end
+            let flickerCount = 0;
+            const flickerInterval = setInterval(() => {
+                messageText.style.opacity = messageText.style.opacity === '0' ? '1' : '0';
+                flickerCount++;
+                if (flickerCount > 10) {
+                    clearInterval(flickerInterval);
+                    messageText.style.opacity = '1';
+                    
+                    // After 5 seconds, restart countdown for next day
+                    setTimeout(() => {
+                        startCountdown();
+                    }, 5000);
+                }
+            }, 200);
+        }
+
+        // Start countdown timer
+        function startCountdown() {
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        }
+
+        // Initialize when DOM is loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
