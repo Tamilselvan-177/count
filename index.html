@@ -172,6 +172,21 @@
             white: '#ffffff'
         };
 
+        // Check if event has already ended today
+        function hasEventEndedToday() {
+            const lastEventEnd = localStorage.getItem('eventEndDate');
+            if (!lastEventEnd) return false;
+            
+            const today = new Date().toDateString();
+            return lastEventEnd === today;
+        }
+        
+        // Mark event as ended for today
+        function markEventEnded() {
+            const today = new Date().toDateString();
+            localStorage.setItem('eventEndDate', today);
+        }
+        
         // Initialize the page
         function init() {
             createParticles();
@@ -180,7 +195,13 @@
             styleCountdown();
             styleTargetInfo();
             addBackgroundGradient();
-            startCountdown();
+            
+            // Check if event already ended today
+            if (hasEventEndedToday()) {
+                showEventEnd();
+            } else {
+                startCountdown();
+            }
         }
 
         // Create floating particles
@@ -267,7 +288,6 @@
         // Style target info
         function styleTargetInfo() {
             const info = document.getElementById('target-info');
-            info.textContent = 'Daily at 11:00 AM IST';
             info.style.color = colors.white;
             info.style.textShadow = `0 0 3px ${colors.yellow}`;
         }
@@ -286,18 +306,18 @@
             body.insertBefore(gradient, body.firstChild);
         }
 
-        // Calculate next 11:00 AM IST
+        // Calculate next 10:22 AM IST
         function getNextTargetTime() {
             // Get current time in IST
             const now = new Date();
             const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
             const istTime = new Date(now.getTime() + istOffset + now.getTimezoneOffset() * 60 * 1000);
             
-            // Set target to 11:00 AM IST today
+            // Set target to 10:22 AM IST today
             const target = new Date(istTime);
-            target.setHours(11, 0, 0, 0);
+            target.setHours(11, 00, 0, 0);
             
-            // If we've passed 11:00 AM IST today, set target to tomorrow
+            // If we've passed 10:22 AM IST today, set target to tomorrow
             if (istTime > target) {
                 target.setDate(target.getDate() + 1);
             }
@@ -312,7 +332,8 @@
             const target = getNextTargetTime();
             const diff = target - now;
             
-            if (diff <= 0) {
+            // If diff is less than 1 second, show event end
+            if (diff <= 1000) {
                 showEventEnd();
                 return;
             }
@@ -349,6 +370,14 @@
 
         // Show event end message
         function showEventEnd() {
+            // Clear the countdown interval
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            
+            // Mark event as ended for today
+            markEventEnded();
+            
             const countdown = document.getElementById('countdown');
             const eventMessage = document.getElementById('event-message');
             const messageText = eventMessage.querySelector('div');
@@ -374,19 +403,21 @@
                 if (flickerCount > 10) {
                     clearInterval(flickerInterval);
                     messageText.style.opacity = '1';
-                    
-                    // After 5 seconds, restart countdown for next day
-                    setTimeout(() => {
-                        startCountdown();
-                    }, 5000);
+                    // Event End message stays permanently - no auto-restart
                 }
             }, 200);
         }
 
         // Start countdown timer
+        let countdownInterval;
+        
         function startCountdown() {
+            // Clear any existing interval
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
             updateCountdown();
-            setInterval(updateCountdown, 1000);
+            countdownInterval = setInterval(updateCountdown, 1000);
         }
 
         // Initialize when DOM is loaded
